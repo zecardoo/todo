@@ -1,9 +1,11 @@
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:todo/components/button.dart';
 import 'package:todo/components/textfild.dart';
 import 'package:todo/components/square_tile.dart';
-
+ 
+ 
 class LoginPage extends StatefulWidget {
   
   final Function()? onTap;
@@ -19,6 +21,7 @@ class _LoginPageState extends State<LoginPage> {
   final passwordcontroller = TextEditingController();
   // sign user method
   void signUserIn() async{
+    
     showDialog(
       context: context,
       builder: (context) {
@@ -35,9 +38,12 @@ class _LoginPageState extends State<LoginPage> {
       
       // ignore: use_build_context_synchronously
       Navigator.pop(context);
+
     } on FirebaseAuthException catch (e) {
+      
       // ignore: use_build_context_synchronously
       Navigator.pop(context);
+      
       showErrorMessage(e.code);
 
       
@@ -196,3 +202,4 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 }
+
