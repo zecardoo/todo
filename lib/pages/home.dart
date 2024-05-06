@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:todo/components/addtaskmodal.dart';
 
 class HomePage extends StatelessWidget {
   HomePage({super.key});
@@ -51,8 +52,14 @@ class HomePage extends StatelessWidget {
         elevation: 3,
         shape: BoxShape.circle,
         child: FloatingActionButton(
-          onPressed: () {
-            Navigator.pushNamed(context, '/addtask');
+          onPressed: () async{
+            await showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return const AddNewTask();
+              },
+            );
+          // Navigator.pushNamed(context, '/addtask');
           },
           backgroundColor: Colors.white,
         
