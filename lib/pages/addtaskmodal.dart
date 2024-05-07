@@ -13,8 +13,6 @@ class _AddNewTaskState extends State<AddNewTask> {
   final  descriptioncontroller = TextEditingController();
   late DateTime _dueDate;
 
-
-
   @override
   void initState() {
     super.initState();
@@ -34,13 +32,25 @@ class _AddNewTaskState extends State<AddNewTask> {
           ),
         ),
         
+        // ############################################# input #############################################
+
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-          TextField(
+          TextFormField(
             controller: namecontroller,
             decoration: const InputDecoration(label: Text('Task')),
+            onChanged: (value) {
+              
+            },
+           validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter some text';
+              }
+              return null;
+            },
           ),
+        
 
           const SizedBox(height: 20),
 
@@ -78,6 +88,7 @@ class _AddNewTaskState extends State<AddNewTask> {
         ],),
 
         
+        // ############################################# Button in #############################################
 
         actions: [
           ElevatedButton(
@@ -97,13 +108,17 @@ class _AddNewTaskState extends State<AddNewTask> {
           
           ElevatedButton(
             onPressed: () {
-              final newtask = Task(
-                name: namecontroller.text,
-                description: descriptioncontroller.text,
-                dueDate: _dueDate,
-                isCompleted: false,
-              );
-              Navigator.pop(context,newtask);
+              if(namecontroller.text.isNotEmpty && descriptioncontroller.text.isNotEmpty){
+                  final newtask = Task(
+                  name: namecontroller.text,
+                  description: descriptioncontroller.text,
+                  dueDate: _dueDate,
+                  isCompleted: false,
+                );
+                Navigator.pop(context,newtask);
+              }else {
+                
+              } 
             },
             
             child: Text(

@@ -2,6 +2,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:todo/components/taskdata.dart';
 import 'package:todo/pages/addtaskmodal.dart';
+import 'package:intl/intl.dart';
+
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -13,6 +15,7 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   final user = FirebaseAuth.instance.currentUser!;
   final List<Task> _tasks = [];
+
 
   void _addnewtask (Task task) {
     setState(() {
@@ -33,7 +36,7 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: Colors.grey[300],
             // ############################################# APP BAR #############################################
 
       appBar: AppBar(
@@ -48,25 +51,60 @@ class _HomeState extends State<Home> {
       ),
 
       // ############################################# Body #############################################
-      body: Center(
-        
-        child: ListView.builder(
-          itemCount: _tasks.length,
-          itemBuilder: (context, index){
-            final task = _tasks[index];
-
-            return ListTile(
-            title: Text(task.name),
-            subtitle: Text(task.description),
-            trailing: IconButton(
-              icon: const Icon(Icons.delete),
-              onPressed: () {
-                _removeTask(index);
-              },
-            ),
-          );
-          },
-        )
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Center(
+          
+          child: ListView.builder(
+            itemCount: _tasks.length,
+            itemBuilder: (context, index){
+              final task = _tasks[index];
+              // Format the date
+              String formattedDate = DateFormat('yyyy-MM-dd').format(task.dueDate);
+              
+              return Card(
+                child: ListTile(
+                
+                
+                leading: Checkbox(
+                  activeColor: Colors.blueGrey[400],
+                  value: task.isCompleted,
+                  onChanged: (bool? value) {
+                    setState(() {
+                      task.isCompleted = value!;
+                    });
+                  },
+                ),
+                
+                title: Text(
+                  task.name,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                    decoration: task.isCompleted ? TextDecoration.lineThrough : null, // Add a strikethrough effect when task is completed
+                    color: task.isCompleted ? Colors.grey : Colors.black, // Change text color when task is completed
+                  ),
+                ),
+                subtitle: Text(
+                  task.description,
+                  style: TextStyle(
+                    fontSize: 13,
+                    decoration: task.isCompleted ? TextDecoration.lineThrough : null, // Add a strikethrough effect when task is completed
+                    color: task.isCompleted ? Colors.grey : Colors.grey[700], // Change text color when task is completed
+                  ),
+                ),
+                dense: true,
+                trailing: IconButton(
+                  icon: const Icon(Icons.more_vert),
+                  onPressed: () {
+                    // _removeTask(index);
+                  },
+                ),
+                          ),
+              );
+            },
+          )
+        ),
       ),
       
       // ############################################# NavigationBar #############################################
@@ -93,10 +131,9 @@ class _HomeState extends State<Home> {
                 return const AddNewTask();
               },
             );
-            print(task);
-            // if(task != null){
-            //   _addnewtask(task);
-            // }
+            if(task != null){
+              _addnewtask(task);
+            }
             
           
           // Navigator.pushNamed(context, '/addtask');
