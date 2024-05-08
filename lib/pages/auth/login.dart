@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:todo/components/button.dart';
 import 'package:todo/components/textfild.dart';
 import 'package:todo/components/square_tile.dart';
+import 'package:todo/services/google_auth.dart';
  
  
 class LoginPage extends StatefulWidget {
@@ -162,8 +163,7 @@ class _LoginPageState extends State<LoginPage> {
                   children: [
                     // Image(image: AssetImage('assets/google.png'))
                     SquareTile(
-                      // onTap: () => GoogleAuth().signInWithGoogle(),
-                      onTap: () {},
+                      onTap: () => GoogleAuth().signInWithGoogle(context),
                       imagePath: 'assets/google.png',
                     ),
                     

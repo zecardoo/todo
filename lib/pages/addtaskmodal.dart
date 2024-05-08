@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:todo/components/taskdata.dart';
+import 'package:logger/logger.dart';
 
 class AddNewTask extends StatefulWidget {
   const AddNewTask({super.key});
@@ -11,11 +10,40 @@ class AddNewTask extends StatefulWidget {
 }
 
 class _AddNewTaskState extends State<AddNewTask> {
+
+  // i useed this instead of print 
+  final Logger logger = Logger();
+
+
   final  taskcontroller = TextEditingController();
   final  descriptioncontroller = TextEditingController();
   late DateTime _dueDate;
 
-  
+
+  void addtask (String task, String description, DateTime date, bool iscompleted) {
+    // Get a reference to the Firestore database
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+    // Get a reference to the "databes name" collection
+    CollectionReference todo = firestore.collection('Todo');
+
+
+     // Add a new document with a generated ID
+    todo.add({
+      'task': task,
+      'description': description,
+      'date': date,
+      'iscompleted': iscompleted
+    })
+    .then((DocumentReference document) {
+      //Here, i stands for the info level,
+      logger.i('Document added with ID: ${document.id}');
+    })
+    .catchError((error) {
+      //Here, i stands for the info level,
+      logger.i('Error adding document: $error');
+    });
+  }
 
 
   @override
@@ -111,21 +139,11 @@ class _AddNewTaskState extends State<AddNewTask> {
             ),
           ),
           
+          // ############################################# Add new Task #############################################
           ElevatedButton(
             onPressed: () {
               if(taskcontroller.text.isNotEmpty && descriptioncontroller.text.isNotEmpty){
-                FirebaseFirestore.instance.collection('Todo').add({
-                'task': taskcontroller.text,
-                  'description': descriptioncontroller.text,
-                  'data': _dueDate, 
-                  'iscompleted': false 
-                }).then((DocumentReference document) {
-                  print('Document added with ID: ${document.id}');
-                })
-                .catchError((error) {
-                  print('Error adding document: $error');
-                });
-                
+                addtask(taskcontroller.text, descriptioncontroller.text, _dueDate, false);
                 
                 Navigator.pop(context);
               }else {

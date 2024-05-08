@@ -25,6 +25,7 @@ class _HomeState extends State<Home> {
     });
   }
   
+  // ignore: unused_element
   void _removeTask(int index) {
     setState(() {
       _tasks.removeAt(index);
@@ -51,6 +52,7 @@ class _HomeState extends State<Home> {
               itemBuilder: (context, index){
                 final task = _tasks[index];
                 // Format the date
+                // ignore: unused_local_variable
                 String formattedDate = DateFormat('yyyy-MM-dd').format(task.dueDate);
                 
                 return Card(
@@ -106,6 +108,7 @@ class _HomeState extends State<Home> {
               itemBuilder: (context, index){
                 final task = _tasks[index];
                 // Format the date
+                // ignore: unused_local_variable
                 String formattedDate = DateFormat('yyyy-MM-dd').format(task.dueDate);
                 
                 return Card(
