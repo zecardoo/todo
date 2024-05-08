@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:todo/components/taskdata.dart';
 
@@ -9,9 +11,12 @@ class AddNewTask extends StatefulWidget {
 }
 
 class _AddNewTaskState extends State<AddNewTask> {
-  final  namecontroller = TextEditingController();
+  final  taskcontroller = TextEditingController();
   final  descriptioncontroller = TextEditingController();
   late DateTime _dueDate;
+
+  
+
 
   @override
   void initState() {
@@ -38,7 +43,7 @@ class _AddNewTaskState extends State<AddNewTask> {
           mainAxisSize: MainAxisSize.min,
           children: [
           TextFormField(
-            controller: namecontroller,
+            controller: taskcontroller,
             decoration: const InputDecoration(label: Text('Task')),
             onChanged: (value) {
               
@@ -108,14 +113,21 @@ class _AddNewTaskState extends State<AddNewTask> {
           
           ElevatedButton(
             onPressed: () {
-              if(namecontroller.text.isNotEmpty && descriptioncontroller.text.isNotEmpty){
-                  final newtask = Task(
-                  name: namecontroller.text,
-                  description: descriptioncontroller.text,
-                  dueDate: _dueDate,
-                  isCompleted: false,
-                );
-                Navigator.pop(context,newtask);
+              if(taskcontroller.text.isNotEmpty && descriptioncontroller.text.isNotEmpty){
+                FirebaseFirestore.instance.collection('Todo').add({
+                'task': taskcontroller.text,
+                  'description': descriptioncontroller.text,
+                  'data': _dueDate, 
+                  'iscompleted': false 
+                }).then((DocumentReference document) {
+                  print('Document added with ID: ${document.id}');
+                })
+                .catchError((error) {
+                  print('Error adding document: $error');
+                });
+                
+                
+                Navigator.pop(context);
               }else {
                 
               } 

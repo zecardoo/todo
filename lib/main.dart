@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:todo/pages/auth/auth_page.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:todo/pages/completedtask.dart';
 import 'firebase_options.dart';
 void main() async{
   
@@ -13,9 +14,10 @@ void main() async{
     initialRoute: '/login',
     routes: {
       '/login':(context) => const AuthPage(),
-      // '/addtask':(context) => const AddTask(),
+      '/completed_task':(context) => const CompletedTask(),
 
     },
     debugShowCheckedModeBanner: false,
+
   ));
 }

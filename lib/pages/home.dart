@@ -15,6 +15,8 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   final user = FirebaseAuth.instance.currentUser!;
   final List<Task> _tasks = [];
+  int currentPageIndex = 0;
+
 
 
   void _addnewtask (Task task) {
@@ -35,10 +37,126 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
+
+
+    // ############################################# Display TAsk #############################################
+
+    final List<Widget> taskpages = [
+          Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Center(
+            
+            child: ListView.builder(
+              itemCount: _tasks.length,
+              itemBuilder: (context, index){
+                final task = _tasks[index];
+                // Format the date
+                String formattedDate = DateFormat('yyyy-MM-dd').format(task.dueDate);
+                
+                return Card(
+                  
+                  child: task.isCompleted ? null : ListTile(
+                  leading: Checkbox(
+                    activeColor: Colors.blueGrey[400],
+                    value: task.isCompleted,
+                    onChanged: (bool? value) {
+                      setState(() {
+                        task.isCompleted = value!;
+                      });
+                    },
+                  ),
+                  
+                  title: Text(
+                    task.name,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                      decoration: task.isCompleted ? TextDecoration.lineThrough : null, // Add a strikethrough effect when task is completed
+                      color: task.isCompleted ? Colors.grey : Colors.black, // Change text color when task is completed
+                    ),
+                  ),
+                  subtitle: Text(
+                    task.description,
+                    style: TextStyle(
+                      fontSize: 13,
+                      decoration: task.isCompleted ? TextDecoration.lineThrough : null, // Add a strikethrough effect when task is completed
+                      color: task.isCompleted ? Colors.grey : Colors.grey[700], // Change text color when task is completed
+                    ),
+                  ),
+                  dense: true,
+                  trailing: IconButton(
+                    icon: const Icon(Icons.more_vert),
+                    onPressed: () {
+                      // _removeTask(index);
+                    },
+                  ),
+                ),
+              );
+            },
+          )
+        ),
+      ),
+
+      Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Center(
+            
+            child: ListView.builder(
+              itemCount: _tasks.length,
+              itemBuilder: (context, index){
+                final task = _tasks[index];
+                // Format the date
+                String formattedDate = DateFormat('yyyy-MM-dd').format(task.dueDate);
+                
+                return Card(
+                  
+                  child: task.isCompleted ? ListTile(
+                  leading: Checkbox(
+                    activeColor: Colors.blueGrey[400],
+                    value: task.isCompleted,
+                    onChanged: (bool? value) {
+                      setState(() {
+                        task.isCompleted = value!;
+                      });
+                    },
+                  ),
+                  
+                  title: Text(
+                    task.name,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                      decoration: task.isCompleted ? TextDecoration.lineThrough : null, // Add a strikethrough effect when task is completed
+                      color: task.isCompleted ? Colors.grey : Colors.black, // Change text color when task is completed
+                    ),
+                  ),
+                  subtitle: Text(
+                    task.description,
+                    style: TextStyle(
+                      fontSize: 13,
+                      decoration: task.isCompleted ? TextDecoration.lineThrough : null, // Add a strikethrough effect when task is completed
+                      color: task.isCompleted ? Colors.grey : Colors.grey[700], // Change text color when task is completed
+                    ),
+                  ),
+                  dense: true,
+                  trailing: IconButton(
+                    icon: const Icon(Icons.more_vert),
+                    onPressed: () {
+                      // _removeTask(index);
+                    },
+                  ),
+                ) : null,
+              );
+            },
+          )
+        ),
+      ),
+    ];
+    
     return Scaffold(
       backgroundColor: Colors.grey[300],
-            // ############################################# APP BAR #############################################
 
+      // ############################################# APP BAR #############################################
       appBar: AppBar(
         actions: [
           IconButton(
@@ -50,70 +168,38 @@ class _HomeState extends State<Home> {
         backgroundColor: Colors.blueGrey[600],
       ),
 
-      // ############################################# Body #############################################
-      body: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Center(
-          
-          child: ListView.builder(
-            itemCount: _tasks.length,
-            itemBuilder: (context, index){
-              final task = _tasks[index];
-              // Format the date
-              String formattedDate = DateFormat('yyyy-MM-dd').format(task.dueDate);
-              
-              return Card(
-                child: ListTile(
-                
-                
-                leading: Checkbox(
-                  activeColor: Colors.blueGrey[400],
-                  value: task.isCompleted,
-                  onChanged: (bool? value) {
-                    setState(() {
-                      task.isCompleted = value!;
-                    });
-                  },
-                ),
-                
-                title: Text(
-                  task.name,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 15,
-                    decoration: task.isCompleted ? TextDecoration.lineThrough : null, // Add a strikethrough effect when task is completed
-                    color: task.isCompleted ? Colors.grey : Colors.black, // Change text color when task is completed
-                  ),
-                ),
-                subtitle: Text(
-                  task.description,
-                  style: TextStyle(
-                    fontSize: 13,
-                    decoration: task.isCompleted ? TextDecoration.lineThrough : null, // Add a strikethrough effect when task is completed
-                    color: task.isCompleted ? Colors.grey : Colors.grey[700], // Change text color when task is completed
-                  ),
-                ),
-                dense: true,
-                trailing: IconButton(
-                  icon: const Icon(Icons.more_vert),
-                  onPressed: () {
-                    // _removeTask(index);
-                  },
-                ),
-                          ),
-              );
-            },
-          )
-        ),
-      ),
+      body: taskpages[currentPageIndex],
+      
+
       
       // ############################################# NavigationBar #############################################
-
-
       //  bottomNavigationBar
-      bottomNavigationBar: BottomAppBar(
-        color: Colors.blueGrey[600],
-        height: 50,
+      bottomNavigationBar: BottomNavigationBar(
+      
+       currentIndex: currentPageIndex,
+
+        onTap: (int index) {
+          setState(() { 
+            currentPageIndex = index;
+          });
+        },
+
+        items: const [
+          
+          BottomNavigationBarItem(
+            activeIcon: Icon(Icons.home),
+            icon: Icon(Icons.home_outlined),
+            label: 'Home',
+          ),
+         
+           BottomNavigationBarItem(
+            activeIcon: Icon(Icons.done),
+            icon: Icon(Icons.done_outline_sharp),
+            label: 'Completed',
+          ),
+        ],
+        
+
       ),
 
       // button 
@@ -133,6 +219,7 @@ class _HomeState extends State<Home> {
             );
             if(task != null){
               _addnewtask(task);
+              currentPageIndex =0;
             }
             
           
@@ -153,8 +240,9 @@ class _HomeState extends State<Home> {
       
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       
+      
 
     );
+    
   }
 }
-
