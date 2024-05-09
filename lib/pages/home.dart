@@ -1,8 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:todo/components/taskdata.dart';
+import 'package:logger/logger.dart';
 import 'package:todo/pages/addtaskmodal.dart';
-import 'package:intl/intl.dart';
 
 
 class Home extends StatefulWidget {
@@ -13,146 +13,198 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  final Logger logger = Logger();
+
   final user = FirebaseAuth.instance.currentUser!;
-  final List<Task> _tasks = [];
   int currentPageIndex = 0;
 
-
-
-  void _addnewtask (Task task) {
-    setState(() {
-      _tasks.add(task);
-    });
-  }
-  
-  // ignore: unused_element
-  void _removeTask(int index) {
-    setState(() {
-      _tasks.removeAt(index);
-    });
-  }
+  // Sign User out ===========================================
   void signUserOut () {
     FirebaseAuth.instance.signOut();
   }
 
+  // Update the task ===========================================
+  // void updateTask (){ 
+
+  // }
 
   @override
   Widget build(BuildContext context) {
 
 
-    // ############################################# Display TAsk #############################################
 
     final List<Widget> taskpages = [
+    
+    // ############################################# Display TAsk Page 1 #############################################=
           Padding(
           padding: const EdgeInsets.all(8.0),
-          child: Center(
-            
-            child: ListView.builder(
-              itemCount: _tasks.length,
-              itemBuilder: (context, index){
-                final task = _tasks[index];
-                // Format the date
-                // ignore: unused_local_variable
-                String formattedDate = DateFormat('yyyy-MM-dd').format(task.dueDate);
-                
-                return Card(
-                  
-                  child: task.isCompleted ? null : ListTile(
-                  leading: Checkbox(
-                    activeColor: Colors.blueGrey[400],
-                    value: task.isCompleted,
-                    onChanged: (bool? value) {
-                      setState(() {
-                        task.isCompleted = value!;
-                      });
-                    },
-                  ),
-                  
-                  title: Text(
-                    task.name,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15,
-                      decoration: task.isCompleted ? TextDecoration.lineThrough : null, // Add a strikethrough effect when task is completed
-                      color: task.isCompleted ? Colors.grey : Colors.black, // Change text color when task is completed
+
+          child: StreamBuilder(
+            stream: FirebaseFirestore.instance.collection('Todo').where('iscompleted', isEqualTo: false).snapshots(),
+
+            builder: (context, snapshot) {
+              if(snapshot.hasError){
+                return Center(
+                  child: Text('Error: ${snapshot.error}'),
+                );
+              }
+
+              if(snapshot.connectionState == ConnectionState.waiting){
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
+
+              
+              return ListView.builder(
+                itemCount: snapshot.data!.docs.length,
+                itemBuilder: (context, index) {
+                  //call the data 
+                  final task = snapshot.data!.docs[index];
+
+                  // call the id of data
+                  final docsID = task.id;
+                  //select the DocumentReference to update  
+                  DocumentReference documentReference = FirebaseFirestore.instance.collection('Todo').doc(docsID);
+
+                 
+
+                  return Card(
+                    child: ListTile(
+                      leading: Checkbox(
+                        value: task['iscompleted'],
+                        onChanged: (bool? value) {
+                          setState(() {
+                            //update the data 
+                            documentReference.update({'iscompleted': value!}).
+                             then((_) {
+                              logger.i('Data updated ----->  iscompleted: $value  id: $docsID');
+                            }).catchError((onError) {
+                              logger.i('Error: $onError  id: $docsID');
+                            });
+                          });
+                        },
+                      ),
+                    
+                      title: Text(
+                        task['task'],
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          decoration: task['iscompleted'] ? TextDecoration.lineThrough : null,
+                          color: task['iscompleted'] ? Colors.grey[400] : null,
+                        ),
+                      ),
+                      subtitle: Text(
+                        task['description'],
+                        style: TextStyle(
+                          decoration: task['iscompleted'] ? TextDecoration.lineThrough : null,
+                          color: task['iscompleted'] ? Colors.grey[400] : null,
+                        ),
+
+                      ),
+
+                      dense: false,
+
+                      trailing: IconButton(
+                        onPressed: () {
+                          
+                        },
+
+                        icon: const Icon(Icons.more_vert),
+                      ),
                     ),
-                  ),
-                  subtitle: Text(
-                    task.description,
-                    style: TextStyle(
-                      fontSize: 13,
-                      decoration: task.isCompleted ? TextDecoration.lineThrough : null, // Add a strikethrough effect when task is completed
-                      color: task.isCompleted ? Colors.grey : Colors.grey[700], // Change text color when task is completed
-                    ),
-                  ),
-                  dense: true,
-                  trailing: IconButton(
-                    icon: const Icon(Icons.more_vert),
-                    onPressed: () {
-                      // _removeTask(index);
-                    },
-                  ),
-                ),
+                  );
+                },
               );
-            },
+            }
+
           )
-        ),
       ),
+
+      // ############################################# Display TAsk Page 2 #############################################
 
       Padding(
           padding: const EdgeInsets.all(8.0),
-          child: Center(
-            
-            child: ListView.builder(
-              itemCount: _tasks.length,
-              itemBuilder: (context, index){
-                final task = _tasks[index];
-                // Format the date
-                // ignore: unused_local_variable
-                String formattedDate = DateFormat('yyyy-MM-dd').format(task.dueDate);
-                
-                return Card(
-                  
-                  child: task.isCompleted ? ListTile(
-                  leading: Checkbox(
-                    activeColor: Colors.blueGrey[400],
-                    value: task.isCompleted,
-                    onChanged: (bool? value) {
-                      setState(() {
-                        task.isCompleted = value!;
-                      });
-                    },
-                  ),
-                  
-                  title: Text(
-                    task.name,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15,
-                      decoration: task.isCompleted ? TextDecoration.lineThrough : null, // Add a strikethrough effect when task is completed
-                      color: task.isCompleted ? Colors.grey : Colors.black, // Change text color when task is completed
+
+          child: StreamBuilder(
+            stream: FirebaseFirestore.instance.collection('Todo').where('iscompleted', isEqualTo: true).snapshots(),
+
+            builder: (context, snapshot) {
+              if(snapshot.hasError){
+                return Center(
+                  child: Text('Error: ${snapshot.error}'),
+                );
+              }
+
+              if(snapshot.connectionState == ConnectionState.waiting){
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
+
+              
+              return ListView.builder(
+                itemCount: snapshot.data!.docs.length,
+                itemBuilder: (context, index) {
+                  //call the data 
+                  final task = snapshot.data!.docs[index];
+
+                  // call the id of data
+                  final docsID = task.id;
+
+                  //select the DocumentReference to update  
+                  DocumentReference documentReference = FirebaseFirestore.instance.collection('Todo').doc(docsID);
+
+                  return Card(
+                    child: ListTile(
+                      leading: Checkbox(
+                        value: task['iscompleted'],
+                        onChanged: (bool? value) {
+                          setState(() {
+                            //update the data 
+                            documentReference.update({'iscompleted': value!}).
+                            then((_) {
+                              logger.i('Data updated ----->  iscompleted: $value  id: $docsID');
+                            }).catchError((onError) {
+                              logger.i('Error: $onError  id: $docsID');
+                            });
+                          });
+                        },
+                      ),
+                    
+                      title: Text(
+                        task['task'],
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          decoration: task['iscompleted'] ? TextDecoration.lineThrough : null,
+                          color: task['iscompleted'] ? Colors.grey[400] : null,
+                        ),
+                      ),
+                      subtitle: Text(
+                        task['description'],
+                        style: TextStyle(
+                          decoration: task['iscompleted'] ? TextDecoration.lineThrough : null,
+                          color: task['iscompleted'] ? Colors.grey[400] : null,
+                        ),
+
+                      ),
+
+                      dense: false,
+
+                      trailing: IconButton(
+                        onPressed: () {
+                          
+                        },
+
+                        icon: const Icon(Icons.more_vert),
+                      ),
                     ),
-                  ),
-                  subtitle: Text(
-                    task.description,
-                    style: TextStyle(
-                      fontSize: 13,
-                      decoration: task.isCompleted ? TextDecoration.lineThrough : null, // Add a strikethrough effect when task is completed
-                      color: task.isCompleted ? Colors.grey : Colors.grey[700], // Change text color when task is completed
-                    ),
-                  ),
-                  dense: true,
-                  trailing: IconButton(
-                    icon: const Icon(Icons.more_vert),
-                    onPressed: () {
-                      // _removeTask(index);
-                    },
-                  ),
-                ) : null,
+                  );
+                },
               );
-            },
+            }
+
           )
-        ),
       ),
     ];
     
@@ -221,7 +273,6 @@ class _HomeState extends State<Home> {
               },
             );
             if(task != null){
-              _addnewtask(task);
               currentPageIndex =0;
             }
             
