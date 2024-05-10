@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 
@@ -11,40 +12,35 @@ class AddNewTask extends StatefulWidget {
 
 class _AddNewTaskState extends State<AddNewTask> {
 
-  // i useed this instead of print 
+  // used instead of print
   final Logger logger = Logger();
-
-
-  final  taskcontroller = TextEditingController();
-  final  descriptioncontroller = TextEditingController();
+  final user = FirebaseAuth.instance.currentUser!;
+  final taskController = TextEditingController();
+  final descriptionController = TextEditingController();
   late DateTime _dueDate;
 
-
-  void addtask (String task, String description, DateTime date, bool iscompleted) {
+  void addTask(String task, String description, DateTime date, bool isCompleted) {
     // Get a reference to the Firestore database
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    final FirebaseFirestore firestore = FirebaseFirestore.instance;
+        // Get a reference to the "databes name" collection
 
-    // Get a reference to the "databes name" collection
-    CollectionReference todo = firestore.collection('Todo');
-
+    final CollectionReference todo = firestore.collection('Todo');
 
      // Add a new document with a generated ID
     todo.add({
       'task': task,
       'description': description,
       'date': date,
-      'iscompleted': iscompleted
-    })
-    .then((DocumentReference document) {
+      'iscompleted': isCompleted,
+      'userID': user.uid
+    }).then((DocumentReference document) {
       //Here, i stands for the info level,
       logger.i('Document added with ID: ${document.id}');
-    })
-    .catchError((error) {
+    }).catchError((error) {
       //Here, i stands for the info level,
       logger.i('Error adding document: $error');
     });
   }
-
 
   @override
   void initState() {
@@ -57,43 +53,31 @@ class _AddNewTaskState extends State<AddNewTask> {
     return AlertDialog(
       backgroundColor: Colors.white,
       buttonPadding: const EdgeInsets.all(20),
-      
-        title: const Text(
-          'Add New Task',
-          style: TextStyle(
-            fontWeight: FontWeight.bold
-          ),
-        ),
-        
-        // ############################################# input #############################################
 
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
+      title: const Text(
+        'Add New Task',
+        style: TextStyle(fontWeight: FontWeight.bold),
+      ),
+
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
           TextFormField(
-            controller: taskcontroller,
-            decoration: const InputDecoration(label: Text('Task')),
-            onChanged: (value) {
-              
-            },
-           validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please enter some text';
-              }
-              return null;
-            },
+            controller: taskController,
+            decoration: const InputDecoration(labelText: 'Task'),
+            onChanged: (value) {},
+            validator: (value) => value!.isEmpty ? 'Please enter some text' : null,
           ),
-        
 
           const SizedBox(height: 20),
 
           TextField(
-            controller: descriptioncontroller,
-            decoration: const InputDecoration(label: Text('Description')),
+            controller: descriptionController,
+            decoration: const InputDecoration(labelText: 'Description'),
           ),
 
           const SizedBox(height: 20),
-
+          
           TextButton(
             onPressed: () async {
               final selectedDate = await showDatePicker(
@@ -110,61 +94,35 @@ class _AddNewTaskState extends State<AddNewTask> {
             },
             child: Text(
               'Due Date: ${_dueDate.year}/${_dueDate.month}/${_dueDate.day}',
-              style: const TextStyle(
-                color: Colors.black87
-              ),
+              style: const TextStyle(color: Colors.black87),
             ),
           ),
-
           const SizedBox(height: 20),
-
-        ],),
-
-        
-        // ############################################# Button in #############################################
-
-        actions: [
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            child: const Text(
-              'Cancel',
-              style: TextStyle(
-                color: Colors.red,
-                // fontWeight: FontWeight.bold,
-                fontSize: 15
-              ),
-              
-            ),
-          ),
-          
-          // ############################################# Add new Task #############################################
-          ElevatedButton(
-            onPressed: () {
-              if(taskcontroller.text.isNotEmpty && descriptioncontroller.text.isNotEmpty){
-                addtask(taskcontroller.text, descriptioncontroller.text, _dueDate, false);
-                
-                Navigator.pop(context);
-              }else {
-                
-              } 
-            },
-            
-            child: Text(
-              'Add Task', 
-              style: TextStyle(
-                color: Colors.blueGrey[800],
-                fontSize: 15
-              ),
-            
-            ),
-          )
-        
         ],
-        
-        
-      );
+      ),
+      actions: [
+        ElevatedButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text(
+            'Cancel',
+            style: TextStyle(color: Colors.red, fontSize: 15),
+          ),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            if (taskController.text.isNotEmpty && descriptionController.text.isNotEmpty) {
+              addTask(taskController.text, descriptionController.text, _dueDate, false);
+              Navigator.pop(context);
+            } else {
+              // Handle case when fields are empty
+            }
+          },
+          child: Text(
+            'Add Task',
+            style: TextStyle(color: Colors.blueGrey[800], fontSize: 15),
+          ),
+        ),
+      ],
+    );
   }
 }
-

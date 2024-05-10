@@ -38,7 +38,7 @@ class _LoginPageState extends State<LoginPage> {
       );
       
       // ignore: use_build_context_synchronously
-      Navigator.pop(context);
+      // Navigator.pop(context);
 
     } on FirebaseAuthException catch (e) {
       
