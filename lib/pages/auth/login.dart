@@ -1,205 +1,142 @@
-
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+
 import 'package:todo/components/button.dart';
-import 'package:todo/components/text_fild.dart';
 import 'package:todo/components/square_tile.dart';
+import 'package:todo/components/text_fild.dart';
 import 'package:todo/services/google_auth.dart';
- 
- 
+
 class LoginPage extends StatefulWidget {
-  
   final Function()? onTap;
-  const LoginPage({super.key, required this.onTap});
+
+  // Constructor with an onTap function parameter
+  const LoginPage({
+    super.key,
+    this.onTap,
+  }) ;
 
   @override
   State<LoginPage> createState() => _LoginPageState();
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final emailcontroller = TextEditingController();
+  
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
 
-  final passwordcontroller = TextEditingController();
-  // sign user method
-  void signUserIn() async{
-    
-    showDialog(
-      context: context,
-      builder: (context) {
-        return const Center(
-          child: CircularProgressIndicator(),
-        );
-      }
-    );
+  void signUserIn() async {
+    // Show loading dialog while signing in
+    showLoadingDialog();
     try {
+      // Sign in with email and password
       await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: emailcontroller.text,
-        password: passwordcontroller.text
+        email: emailController.text,
+        password: passwordController.text,
       );
-      
-      // ignore: use_build_context_synchronously
-      // Navigator.pop(context);
-
     } on FirebaseAuthException catch (e) {
-      
-      // ignore: use_build_context_synchronously
+      // Hide loading dialog and show error message
       Navigator.pop(context);
-      
       showErrorMessage(e.code);
-
-      
     }
   }
 
-  void showErrorMessage (String message) {
+  void showLoadingDialog() {
+    // Show a loading dialog
     showDialog(
-      context: context, 
-      builder: (context) {
-      return AlertDialog(
+      context: context,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+  }
+
+  void showErrorMessage(String message) {
+    // Show error message in an AlertDialog
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
         backgroundColor: const Color.fromARGB(255, 255, 0, 0),
         title: Column(
           children: [
-            const Icon(Icons.error, color: Colors.white, size: 50,),
+            const Icon(Icons.error, color: Colors.white, size: 50),
             const SizedBox(height: 20),
-            Text(message, style: const TextStyle(color: Colors.white),)
+            Text(message, style: const TextStyle(color: Colors.white)),
           ],
         ),
-      );
-    });
+      ),
+    );
   }
-
-
-
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold (
+    return Scaffold(
       resizeToAvoidBottomInset: false,
       backgroundColor: Colors.grey[300],
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            scrollDirection: Axis.vertical,
             child: Column(
               mainAxisSize: MainAxisSize.min,
-              // mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                // const SizedBox(height: 50,),
-                
-                //logo 
-                const Icon(
-                  Icons.lock,
-                  size: 100,
-                ),
-                
-                // Wlecome message 
-                const SizedBox(height: 50),
-                const Text('Welcome back you\'ve been missd'),
-                const SizedBox(height: 10),
-            
-                // username input 
-                TextFild(
-                  labelText: 'Email',
-                  contrller: emailcontroller,
-                  obscureText: false,
-            
-                ),
-            
-                const SizedBox(height: 15),
-                 // Password input 
-                TextFild(
-                  labelText: 'Password',
-                  contrller: passwordcontroller,
-                  obscureText: true,
-            
-                ),
-            
+                Icon(Icons.lock, size: 100, color: Colors.blueGrey[600],), // Lock icon
+                const SizedBox(height: 50), // Spacing
+                const SizedBox(height: 10), // Spacing
+                TextFild(labelText: 'Email', controller: emailController, obscureText: false), // Email input field
+                const SizedBox(height: 15), // Spacing
+                TextFild(labelText: 'Password', controller: passwordController, obscureText: true), // Password input field
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 5),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      Text('Forgot Password ?', style: TextStyle(color: Colors.grey[700]),),
+                      Text('Forgot Password ?', style: TextStyle(color: Colors.grey[700])), // Forgot password text
                     ],
                   ),
                 ),
-                const SizedBox(height: 20),
-
-                // Sign button
-                Button(
-                  onTap: signUserIn,
-                  text: 'Sign In',
-
-                ),
-                
-                const SizedBox(height: 50),
-            
+                const SizedBox(height: 20), // Spacing
+                Button(onTap: signUserIn, text: 'Sign In'), // Sign in button
+                const SizedBox(height: 50), // Spacing
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 25),
                   child: Row(
                     children: [
-            
-                      Expanded(
-                        child: Divider(thickness: 1, color: Colors.grey[400],)
-                      ),
-            
+                      Expanded(child: Divider(thickness: 1, color: Colors.grey[400])), // Divider
                       const Padding(
                         padding: EdgeInsets.symmetric(horizontal: 10),
-                        child: Text('Or continue with'),
+                        child: Text('Or continue with'), // Or continue with text
                       ),
-            
-                      Expanded(
-                        child: Divider(thickness: 1, color: Colors.grey[400],)
-                      ),
+                      Expanded(child: Divider(thickness: 1, color: Colors.grey[400])), // Divider
                     ],
                   ),
                 ),
-                
-                const SizedBox(height: 10),
-            
-                // Google & facebook Sign In
+                const SizedBox(height: 10), // Spacing
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Image(image: AssetImage('assets/google.png'))
-                    SquareTile(
-                      onTap: () => GoogleAuth().signInWithGoogle(context),
-                      imagePath: 'assets/google.png',
-                    ),
-                    
-                    const SizedBox(width: 25),
-            
-                    SquareTile(
-                      onTap: () {},
-                      imagePath: 'assets/facebook.png',
-                    )
-                    
+                    SquareTile(onTap: () => GoogleAuth().signInWithGoogle(context), imagePath: 'assets/google.png'), // Google sign in
+                    const SizedBox(width: 25), // Spacing
+                    SquareTile(onTap: () {}, imagePath: 'assets/facebook.png'), // Facebook sign in
                   ],
                 ),
-            
-                const SizedBox(height: 50),
-            
+                const SizedBox(height: 50), // Spacing
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text('Not a member?', style: TextStyle(
-                      color: Colors.grey[700]
-                    ),),
-                    const SizedBox(width: 4,),
+                    Text('Not a member?', style: TextStyle(color: Colors.grey[700])), // Not a member text
+                    const SizedBox(width: 4), // Spacing
                     GestureDetector(
-                      onTap: widget.onTap,
-                      child: const Text('Register now', style:  TextStyle(
-                        color: Color.fromARGB(255, 0, 23, 230)
-                      ),),
+                      onTap: widget.onTap, // Navigate to register page on tap
+                      child: const Text(
+                        'Register now',
+                        style: TextStyle(color: Color.fromARGB(255, 0, 23, 230)),
+                      ),
                     ),
                   ],
                 ),
-              ],),
+              ],
+            ),
           ),
-          ),
-        
+        ),
       ),
     );
   }
 }
-

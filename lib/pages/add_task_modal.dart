@@ -63,10 +63,8 @@ class _AddNewTaskState extends State<AddNewTask> {
       buttonPadding: EdgeInsets.all(MediaQuery.of(context).size.width * 0.05),
 
 
-      title: const Text(
-        'Add New Task',
-        style: TextStyle(fontWeight: FontWeight.bold),
-      ),
+      title: const Text('Add Task'),
+      
 
       content: Column(
         mainAxisSize: MainAxisSize.min,
@@ -136,7 +134,7 @@ class _AddNewTaskState extends State<AddNewTask> {
     return ElevatedButton(
       onPressed: _addTask,
       child: Text(
-        'Edit Task',
+        'Add Task',
         style: TextStyle(color: Colors.blueGrey[800], fontSize: 15),
       ),
     );

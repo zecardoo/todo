@@ -35,6 +35,8 @@ class _HomeState extends State<Home> {
     return Scaffold(
       backgroundColor: Colors.grey[300],
       appBar: AppBar(
+        title: const Text('All Lists', style: TextStyle(color: Colors.white),),
+        centerTitle: true,
         actions: [
           IconButton(
             onPressed: signUserOut,
@@ -52,12 +54,14 @@ class _HomeState extends State<Home> {
             currentPageIndex = index;
           });
         },
+        selectedItemColor: Colors.blueGrey[600],
         items: const [
           BottomNavigationBarItem(
             activeIcon: Icon(Icons.home),
             icon: Icon(Icons.home_outlined),
             label: 'Home',
           ),
+
           BottomNavigationBarItem(
             activeIcon: Icon(Icons.done),
             icon: Icon(Icons.done_outline_sharp),
@@ -80,9 +84,10 @@ class _HomeState extends State<Home> {
             currentPageIndex = 0;
           }
         },
+        elevation: 3,
         backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(30.0),
+          borderRadius: BorderRadius.circular(15.0),
         ),
         child: const Icon(
           Icons.add,
@@ -91,11 +96,11 @@ class _HomeState extends State<Home> {
         ),
       ),
 
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 
-  // Method to build a task page based on completion status=======================================================
+  // Method to build a task page based on completion status================================================================================
   Widget _buildTaskPage(bool isCompleted) {
     AnimationStyle? animationStyle;
 
@@ -134,7 +139,32 @@ class _HomeState extends State<Home> {
               // get the data of that id doc to update or delete 
               final documentReference = FirebaseFirestore.instance.collection('Todo').doc(docsID);
 
-              return Card(
+              return  Dismissible(
+              key: Key(docsID), // Provide a unique key
+              onDismissed: (direction) {
+                // Implement deletion logic here
+                documentReference.delete().then((_) {
+                  logger.i('----------[ Deleted Successfully ]----------');
+                }).catchError((onError) {
+                  logger.e('Error: $onError');
+                });
+              },
+              
+              background: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    color: Colors.red
+                  ),
+                  alignment: Alignment.centerRight,
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: const Icon(Icons.delete, color: Colors.white),
+
+                ),
+              ),
+            
+              child: Card(
                 child: ListTile(
                   leading: Checkbox(
                     value: task['iscompleted'],
@@ -157,7 +187,7 @@ class _HomeState extends State<Home> {
                       fontWeight: FontWeight.bold,
                       decoration:
                           task['iscompleted'] ? TextDecoration.lineThrough : null,
-                      color: task['iscompleted'] ? Colors.grey[400] : null,
+                      color: task['iscompleted'] ? Colors.grey[400] : Colors.blueGrey[500],
                     ),
                   ),
 
@@ -214,6 +244,7 @@ class _HomeState extends State<Home> {
                     ],
                   ),
                 ),
+              ),
               );
             },
           );
