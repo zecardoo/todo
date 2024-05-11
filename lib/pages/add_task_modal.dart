@@ -48,6 +48,14 @@ class _AddNewTaskState extends State<AddNewTask> {
     _dueDate = DateTime.now();
   }
 
+    @override
+    void dispose() {
+    // Dispose controllers to avoid memory leaks
+    taskController.dispose();
+    descriptionController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
@@ -69,14 +77,14 @@ class _AddNewTaskState extends State<AddNewTask> {
             validator: (value) => value!.isEmpty ? 'Please enter some text' : null,
           ),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 30),
 
           TextField(
             controller: descriptionController,
             decoration: const InputDecoration(labelText: 'Description'),
           ),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 30),
           
           TextButton(
             onPressed: () async {
@@ -97,7 +105,7 @@ class _AddNewTaskState extends State<AddNewTask> {
               style: const TextStyle(color: Colors.black87),
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 30),
         ],
       ),
       actions: [
@@ -108,6 +116,7 @@ class _AddNewTaskState extends State<AddNewTask> {
             style: TextStyle(color: Colors.red, fontSize: 15),
           ),
         ),
+        
         ElevatedButton(
           onPressed: () {
             if (taskController.text.isNotEmpty && descriptionController.text.isNotEmpty) {

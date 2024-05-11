@@ -2,7 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
-import 'package:todo/pages/addtaskmodal.dart';
+import 'package:todo/pages/add_task_modal.dart';
+import 'package:todo/pages/update_task_modal.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -68,6 +69,7 @@ class _HomeState extends State<Home> {
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           final task = await showDialog(
+            // not allowed the user to pop the context from anywhere in screen
             barrierDismissible: false,
             context: context,
             builder: (BuildContext context) {
@@ -105,18 +107,22 @@ class _HomeState extends State<Home> {
             .where('iscompleted', isEqualTo: isCompleted)
             .where('userID', isEqualTo: user.uid)
             .snapshots(),
+
         builder: (context, snapshot) {
+          //if has error 
           if (snapshot.hasError) {
             return Center(
               child: Text('Error: ${snapshot.error}'),
             );
           }
 
+          // if correct
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
               child: CircularProgressIndicator(),
             );
           }
+
 
           return ListView.builder(
             itemCount: snapshot.data!.docs.length,
@@ -174,11 +180,12 @@ class _HomeState extends State<Home> {
                       switch (item) {
                         case TaskAction.edit:
                           showDialog(
+                            // not allowed the user to pop the context from anywhere in screen
                             barrierDismissible: false,
                             context: context,
                             builder: (BuildContext context) {
-                              return const AddNewTask();
-                            },
+                              return EditTask(initialTask: task['task'], initialDescription: task['description'], initialdocID: docsID,  initialdate: (task['date'] as Timestamp).toDate(),);
+                            }, 
                           );
                           break;
 
@@ -197,7 +204,7 @@ class _HomeState extends State<Home> {
                     itemBuilder: (context) => <PopupMenuEntry<TaskAction>>[
                       const PopupMenuItem(
                         value: TaskAction.edit,
-                        child: ListTile( leading: Icon(Icons.edit_outlined), title: Text('Edit'), ),
+                        child: ListTile( leading: Icon(Icons.edit_outlined),   title: Text('Edit'), ),
                       ),
                       
                       const PopupMenuItem(

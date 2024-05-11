@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
-import 'package:todo/pages/addtaskmodal.dart';
+import 'package:todo/pages/add_task_modal.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);

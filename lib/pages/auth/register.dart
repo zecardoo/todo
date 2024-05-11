@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:todo/components/button.dart';
-import 'package:todo/components/textfild.dart';
+import 'package:todo/components/text_fild.dart';
 import 'package:todo/components/square_tile.dart';
 
 class RegisterPage extends StatefulWidget {

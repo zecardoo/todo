@@ -33,6 +33,7 @@ class TextFild extends StatelessWidget {
                   enabledBorder: const OutlineInputBorder(
                     borderSide: BorderSide(color: Color.fromARGB(255, 207, 207, 207))
                   ),
+                  
                   focusedBorder: const OutlineInputBorder(
                     borderSide: BorderSide(color: Color.fromARGB(255, 104, 104, 104))
                   ),
