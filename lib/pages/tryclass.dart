@@ -4,197 +4,148 @@ import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:todo/pages/add_task_modal.dart';
 
-class Home extends StatefulWidget {
-  const Home({Key? key}) : super(key: key);
+
+class EditTask extends StatefulWidget {
+  final String initialTask;
+  final String initialDescription;
+  final String initialDocID;
+  final DateTime initialDate;
+
+  const EditTask({
+    Key? key,
+    required this.initialTask,
+    required this.initialDescription,
+    required this.initialDocID,
+    required this.initialDate,
+  }) : super(key: key);
 
   @override
-  State<Home> createState() => _HomeState();
+  State<EditTask> createState() => _EditTaskState();
 }
 
-// Define an enum for the menu actions
-enum TaskAction { edit, delete }
-
-class _HomeState extends State<Home> {
+class _EditTaskState extends State<EditTask> {
   final Logger logger = Logger();
-  final user = FirebaseAuth.instance.currentUser!;
-  int currentPageIndex = 0;
 
-  void signUserOut() {
-    FirebaseAuth.instance.signOut();
+  late TextEditingController taskController;
+  late TextEditingController descriptionController;
+  late DateTime initialDate;
+  late String docID;
+
+  @override
+  void initState() {
+    super.initState();
+    taskController = TextEditingController(text: widget.initialTask);
+    descriptionController =
+        TextEditingController(text: widget.initialDescription);
+    initialDate = widget.initialDate;
+    docID = widget.initialDocID;
+  }
+
+  @override
+  void dispose() {
+    taskController.dispose();
+    descriptionController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final List<Widget> taskPages = [
-      _buildTaskPage(false), // Page for incomplete tasks
-      _buildTaskPage(true),  // Page for completed tasks
-    ];
-
-    return Scaffold(
-      backgroundColor: Colors.grey[300],
-      appBar: AppBar(
-        actions: [
-          IconButton(
-            onPressed: signUserOut,
-            icon: const Icon(Icons.logout_rounded, color: Colors.white),
-          )
-        ],
-        backgroundColor: Colors.blueGrey[600],
+    return AlertDialog(
+      buttonPadding: EdgeInsets.all(MediaQuery.of(context).size.width * 0.05),
+      title: const Text(
+        'Edit Task',
+        style: TextStyle(),
       ),
-      body: taskPages[currentPageIndex], // Show the current page
-
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: currentPageIndex,
-        onTap: (int index) {
-          setState(() {
-            currentPageIndex = index;
-          });
-        },
-        items: const [
-          BottomNavigationBarItem(
-            activeIcon: Icon(Icons.home),
-            icon: Icon(Icons.home_outlined),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            activeIcon: Icon(Icons.done),
-            icon: Icon(Icons.done_outline_sharp),
-            label: 'Completed',
-          ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildTextField('Task', taskController),
+          const SizedBox(height: 30),
+          _buildTextField('Description', descriptionController),
+          const SizedBox(height: 30),
+          _buildDueDateButton(),
+          const SizedBox(height: 30),
         ],
       ),
-
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          final task = await showDialog(
-            barrierDismissible: false,
-            context: context,
-            builder: (BuildContext context) {
-              return const AddNewTask();
-            },
-          );
-          if (task != null) {
-            currentPageIndex = 0;
-          }
-        },
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(30.0),
-        ),
-        child: const Icon(
-          Icons.add,
-          size: 28,
-          color: Colors.black,
-        ),
-      ),
-
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      actions: [
+        _buildCancelButton(),
+        _buildEditButton(),
+      ],
     );
   }
 
-  // Method to build a task page based on completion status
-  Widget _buildTaskPage(bool isCompleted) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: StreamBuilder(
-        stream: FirebaseFirestore.instance
-            .collection('Todo')
-            .where('iscompleted', isEqualTo: isCompleted)
-            .where('userID', isEqualTo: user.uid)
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return Center(
-              child: Text('Error: ${snapshot.error}'),
-            );
-          }
-
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          }
-
-          return ListView.builder(
-            itemCount: snapshot.data!.docs.length,
-            itemBuilder: (context, index) {
-              final task = snapshot.data!.docs[index];
-              final docsID = task.id;
-              final documentReference = FirebaseFirestore.instance.collection('Todo').doc(docsID);
-
-              return Card(
-                child: ListTile(
-                  leading: Checkbox(
-                    value: task['iscompleted'],
-                    onChanged: (bool? value) {
-                      setState(() {
-                        documentReference.update({'iscompleted': value!})
-                            .then((_) {
-                          logger.i('Data updated ----->  iscompleted: $value  id: $docsID');
-                        }).catchError((onError) {
-                          logger.i('Error: $onError  id: $docsID');
-                        });
-                      });
-                    },
-                  ),
-                  title: Text(
-                    task['task'],
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      decoration: task['iscompleted'] ? TextDecoration.lineThrough : null,
-                      color: task['iscompleted'] ? Colors.grey[400] : null,
-                    ),
-                  ),
-                  subtitle: Text(
-                    task['description'],
-                    style: TextStyle(
-                      decoration: task['iscompleted'] ? TextDecoration.lineThrough : null,
-                      color: task['iscompleted'] ? Colors.grey[400] : null,
-                    ),
-                  ),
-                  dense: false,
-                  trailing: PopupMenuButton<TaskAction>(
-                    tooltip: '',
-                    icon: const Icon(Icons.more_vert),
-                    onSelected: (TaskAction item) {
-                      switch (item) {
-                        case TaskAction.edit:
-                          showDialog(
-                            barrierDismissible: false,
-                            context: context,
-                            builder: (BuildContext context) {
-                              return const AddNewTask();
-                            },
-                          );
-                          break;
-
-                        case TaskAction.delete:
-                          documentReference.delete()
-                          .then((_) {
-                            logger.i('----------[ Deleted Successfully ]----------');
-                          }).catchError((onError) {
-                            logger.e('Error ----> $onError');
-                          });
-                          break;
-                      }
-                    },
-                    itemBuilder: (context) => <PopupMenuEntry<TaskAction>>[
-                      const PopupMenuItem(
-                        value: TaskAction.edit,
-                        child: ListTile(leading: Icon(Icons.edit_outlined), title: Text('Edit')),
-                      ),
-                      const PopupMenuItem(
-                        value: TaskAction.delete,
-                        child: ListTile(leading: Icon(Icons.delete_outline_outlined), title: Text('Delete')),
-                      )
-                    ],
-                  ),
-                ),
-              );
-            },
-          );
-        },
+  Widget _buildTextField(String labelText, TextEditingController controller) {
+    return TextField(
+      controller: controller,
+      style: TextStyle(
+        color: Colors.grey[600],
+        fontSize: 20,
+      ),
+      decoration: InputDecoration(
+        labelText: labelText,
       ),
     );
+  }
+
+  Widget _buildDueDateButton() {
+    return TextButton(
+      onPressed: _selectDate,
+      child: Text(
+        'Due Date: ${initialDate.year}/${initialDate.month}/${initialDate.day}',
+        style: const TextStyle(color: Colors.black),
+      ),
+    );
+  }
+
+  Widget _buildCancelButton() {
+    return ElevatedButton(
+      onPressed: () => Navigator.pop(context),
+      child: const Text(
+        'Cancel',
+        style: TextStyle(color: Colors.red, fontSize: 15),
+      ),
+    );
+  }
+
+  Widget _buildEditButton() {
+    return ElevatedButton(
+      onPressed: _editTask,
+      child: Text(
+        'Edit Task',
+        style: TextStyle(color: Colors.blueGrey[800], fontSize: 15),
+      ),
+    );
+  }
+
+  Future<void> _selectDate() async {
+    final selectedDate = await showDatePicker(
+      context: context,
+      firstDate: DateTime.now(),
+      lastDate: DateTime(2100),
+    );
+    if (selectedDate != null) {
+      setState(() {
+        initialDate = selectedDate;
+      });
+    }
+  }
+
+  void _editTask() {
+    if (taskController.text.isNotEmpty && descriptionController.text.isNotEmpty) {
+      final documentReference = FirebaseFirestore.instance.collection('Todo').doc(docID);
+      documentReference.update({
+        'task': taskController.text,
+        'description': descriptionController.text,
+        'date': initialDate,
+      }).then((_) {
+        logger.i('----------[ Updated Successfully ]----------'); 
+      }).catchError((onError) {
+        logger.i('Error: $onError  id: $docID');
+      });
+
+      Navigator.pop(context);
+    } else {
+      // Handle case when fields are empty
+    }
   }
 }

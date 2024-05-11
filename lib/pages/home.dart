@@ -184,7 +184,7 @@ class _HomeState extends State<Home> {
                             barrierDismissible: false,
                             context: context,
                             builder: (BuildContext context) {
-                              return EditTask(initialTask: task['task'], initialDescription: task['description'], initialdocID: docsID,  initialdate: (task['date'] as Timestamp).toDate(),);
+                              return EditTask(initialTask: task['task'], initialDescription: task['description'], initialDocID: docsID,  initialDate: (task['date'] as Timestamp).toDate(),);
                             }, 
                           );
                           break;
