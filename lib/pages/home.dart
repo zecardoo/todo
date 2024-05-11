@@ -72,7 +72,7 @@ class _HomeState extends State<Home> {
       
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          final task = await showDialog(
+          await showDialog(
             // not allowed the user to pop the context from anywhere in screen
             barrierDismissible: false,
             context: context,
@@ -80,9 +80,9 @@ class _HomeState extends State<Home> {
               return const AddNewTask();
             },
           );
-          if (task != null) {
+          setState(() {
             currentPageIndex = 0;
-          }
+          });
         },
         elevation: 3,
         backgroundColor: Colors.white,
