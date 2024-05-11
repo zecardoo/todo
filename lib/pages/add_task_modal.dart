@@ -60,7 +60,8 @@ class _AddNewTaskState extends State<AddNewTask> {
   Widget build(BuildContext context) {
     return AlertDialog(
       backgroundColor: Colors.white,
-      buttonPadding: const EdgeInsets.all(20),
+      buttonPadding: EdgeInsets.all(MediaQuery.of(context).size.width * 0.05),
+
 
       title: const Text(
         'Add New Task',
@@ -70,68 +71,84 @@ class _AddNewTaskState extends State<AddNewTask> {
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          TextFormField(
-            controller: taskController,
-            decoration: const InputDecoration(labelText: 'Task'),
-            onChanged: (value) {},
-            validator: (value) => value!.isEmpty ? 'Please enter some text' : null,
-          ),
-
+          _buildTextField('Task', taskController),
           const SizedBox(height: 30),
-
-          TextField(
-            controller: descriptionController,
-            decoration: const InputDecoration(labelText: 'Description'),
-          ),
-
+          _buildTextField('Description', descriptionController),
           const SizedBox(height: 30),
-          
-          TextButton(
-            onPressed: () async {
-              final selectedDate = await showDatePicker(
-                context: context,
-                initialDate: _dueDate,
-                firstDate: DateTime.now(),
-                lastDate: DateTime(2100),
-              );
-              if (selectedDate != null) {
-                setState(() {
-                  _dueDate = selectedDate;
-                });
-              }
-            },
-            child: Text(
-              'Due Date: ${_dueDate.year}/${_dueDate.month}/${_dueDate.day}',
-              style: const TextStyle(color: Colors.black87),
-            ),
-          ),
+          _buildDueDateButton(),
           const SizedBox(height: 30),
         ],
       ),
       actions: [
-        ElevatedButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text(
-            'Cancel',
-            style: TextStyle(color: Colors.red, fontSize: 15),
-          ),
-        ),
-        
-        ElevatedButton(
-          onPressed: () {
-            if (taskController.text.isNotEmpty && descriptionController.text.isNotEmpty) {
-              addTask(taskController.text, descriptionController.text, _dueDate, false);
-              Navigator.pop(context);
-            } else {
-              // Handle case when fields are empty
-            }
-          },
-          child: Text(
-            'Add Task',
-            style: TextStyle(color: Colors.blueGrey[800], fontSize: 15),
-          ),
-        ),
+        _buildCancelButton(),
+        _buildEditButton(),
+      
       ],
     );
   }
+  
+  Widget _buildTextField(String labelText, TextEditingController controller) {
+    return TextField(
+      controller: controller,
+      style: TextStyle(
+        color: Colors.grey[600],
+        fontSize: 20,
+      ),
+      decoration: InputDecoration(
+        labelText: labelText,
+      ),
+    );
+  }
+
+  Widget _buildDueDateButton() {
+    return TextButton(
+      onPressed: _selectDate,
+      child: Text(
+        'Due Date: ${_dueDate.year}/${_dueDate.month}/${_dueDate.day}',
+        style: const TextStyle(color: Colors.black),
+      ),
+    );
+  }
+
+  Future<void> _selectDate() async {
+    final selectedDate = await showDatePicker(
+      context: context,
+      firstDate: DateTime.now(),
+      lastDate: DateTime(2100),
+    );
+    if (selectedDate != null) {
+      setState(() {
+        _dueDate = selectedDate;
+      });
+    }
+  }
+   Widget _buildCancelButton() {
+    return ElevatedButton(
+      onPressed: () => Navigator.pop(context),
+      child: const Text(
+        'Cancel',
+        style: TextStyle(color: Colors.red, fontSize: 15),
+      ),
+    );
+  }
+
+  Widget _buildEditButton() {
+    return ElevatedButton(
+      onPressed: _addTask,
+      child: Text(
+        'Edit Task',
+        style: TextStyle(color: Colors.blueGrey[800], fontSize: 15),
+      ),
+    );
+  }
+
+  void _addTask() {
+    if (taskController.text.isNotEmpty && descriptionController.text.isNotEmpty) {
+        addTask(taskController.text, descriptionController.text, _dueDate, false);
+      Navigator.pop(context);
+    } else {
+      // Handle case when fields are empty
+    }
+  }
+  
 }
