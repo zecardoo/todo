@@ -7,11 +7,16 @@ void main() async{
   // Ensure that WidgetsFlutterBinding is properly initialized
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
-  options: DefaultFirebaseOptions.android,
-);
+    options: DefaultFirebaseOptions.android,
+  );
+
+  
+
   runApp( MaterialApp(
+    
     initialRoute: '/login',
     routes: {
+      // '/':(context) => const Lodaing(),
       '/login':(context) => const AuthPage(),
       // '/completed_task':(context) => const CompletedTask(),
 
@@ -19,4 +24,5 @@ void main() async{
     debugShowCheckedModeBanner: false,
 
   ));
+  
 }

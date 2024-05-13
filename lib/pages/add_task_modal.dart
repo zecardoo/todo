@@ -18,6 +18,8 @@ class _AddNewTaskState extends State<AddNewTask> {
   final taskController = TextEditingController();
   final descriptionController = TextEditingController();
   late DateTime _dueDate;
+   // not a GlobalKey<MyCustomFormState>.
+  final _formKey = GlobalKey<FormState>();
 
   void addTask(String task, String description, DateTime date, bool isCompleted) {
     // Get a reference to the Firestore database
@@ -59,6 +61,7 @@ class _AddNewTaskState extends State<AddNewTask> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
+      
       backgroundColor: Colors.white,
       buttonPadding: EdgeInsets.all(MediaQuery.of(context).size.width * 0.05),
 
@@ -66,16 +69,25 @@ class _AddNewTaskState extends State<AddNewTask> {
       title: const Text('Add Task'),
       
 
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _buildTextField('Task', taskController),
-          const SizedBox(height: 30),
-          _buildTextField('Description', descriptionController),
-          const SizedBox(height: 30),
-          _buildDueDateButton(),
-          const SizedBox(height: 30),
-        ],
+      content: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Form(
+                key: _formKey,
+                child: Column(
+                  children: [
+                    _buildTextField('Task', taskController),
+                    _buildTextField('Description', descriptionController),
+                    const SizedBox(height: 30),
+                    _buildDueDateButton(),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
       actions: [
         _buildCancelButton(),
@@ -86,7 +98,7 @@ class _AddNewTaskState extends State<AddNewTask> {
   }
   
   Widget _buildTextField(String labelText, TextEditingController controller) {
-    return TextField(
+    return TextFormField(
       controller: controller,
       style: TextStyle(
         color: Colors.grey[600],
@@ -95,6 +107,12 @@ class _AddNewTaskState extends State<AddNewTask> {
       decoration: InputDecoration(
         labelText: labelText,
       ),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter some text';
+        }
+        return null;
+      },
     );
   }
 
@@ -132,7 +150,11 @@ class _AddNewTaskState extends State<AddNewTask> {
 
   Widget _buildEditButton() {
     return ElevatedButton(
-      onPressed: _addTask,
+      onPressed:  () {
+        if (_formKey.currentState!.validate()) { 
+          _addTask();
+        }
+      },
       child: Text(
         'Add Task',
         style: TextStyle(color: Colors.blueGrey[800], fontSize: 15),
@@ -141,12 +163,8 @@ class _AddNewTaskState extends State<AddNewTask> {
   }
 
   void _addTask() {
-    if (taskController.text.isNotEmpty && descriptionController.text.isNotEmpty) {
-        addTask(taskController.text, descriptionController.text, _dueDate, false);
-      Navigator.pop(context);
-    } else {
-      // Handle case when fields are empty
-    }
+    addTask(taskController.text, descriptionController.text, _dueDate, false);
+    Navigator.pop(context);
   }
   
 }

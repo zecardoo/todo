@@ -1,6 +1,8 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 import 'package:todo/components/button.dart';
 import 'package:todo/components/square_tile.dart';
@@ -13,7 +15,7 @@ class LoginPage extends StatefulWidget {
   // Constructor with an onTap function parameter
   const LoginPage({
     super.key,
-    this.onTap,
+    required this.onTap,
   }) ;
 
   @override
@@ -25,7 +27,7 @@ class _LoginPageState extends State<LoginPage> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
-  void signUserIn() async {
+  void signUserIn()  async{
     // Show loading dialog while signing in
     showLoadingDialog();
     try {
@@ -34,6 +36,7 @@ class _LoginPageState extends State<LoginPage> {
         email: emailController.text,
         password: passwordController.text,
       );
+      Navigator.pop(context);
     } on FirebaseAuthException catch (e) {
       // Hide loading dialog and show error message
       Navigator.pop(context);
@@ -45,7 +48,18 @@ class _LoginPageState extends State<LoginPage> {
     // Show a loading dialog
     showDialog(
       context: context,
-      builder: (context) => const Center(child: CircularProgressIndicator()),
+      builder: (context) {
+        return Container(
+          decoration: BoxDecoration(
+            color: Colors.blueGrey[600]
+          ),
+          child: const Center(child: SpinKitCubeGrid(
+            color: Colors.white,
+            size: 80.0,
+            )
+          ),
+        );
+      },
     );
   }
 
@@ -123,7 +137,7 @@ class _LoginPageState extends State<LoginPage> {
                   children: [
                     Text('Not a member?', style: TextStyle(color: Colors.grey[700])), // Not a member text
                     const SizedBox(width: 4), // Spacing
-                    GestureDetector(
+                    GestureDetector(                
                       onTap: widget.onTap, // Navigate to register page on tap
                       child: const Text(
                         'Register now',

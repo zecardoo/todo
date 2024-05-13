@@ -1,8 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:logger/logger.dart';
 
 class GoogleAuth {
+    final Logger logger = Logger();
+
   final GoogleSignIn _googleSignIn = GoogleSignIn(
     scopes: [
       'email',
@@ -33,7 +36,7 @@ class GoogleAuth {
       return await FirebaseAuth.instance.signInWithCredential(credential);
     } catch (error) {
       // Handle sign-in errors
-      print('Error signing in with Google: $error');
+      logger.i('Error signing in with Google: $error');
       return null;
     }
   }

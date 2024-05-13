@@ -27,6 +27,8 @@ class _EditTaskState extends State<EditTask> {
   late TextEditingController descriptionController;
   late DateTime initialDate;
   late String docID;
+     // not a GlobalKey<MyCustomFormState>.
+  final _formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
@@ -53,16 +55,25 @@ class _EditTaskState extends State<EditTask> {
         'Edit Task',
         style: TextStyle(),
       ),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _buildTextField('Task', taskController),
-          const SizedBox(height: 30),
-          _buildTextField('Description', descriptionController),
-          const SizedBox(height: 30),
-          _buildDueDateButton(),
-          const SizedBox(height: 30),
-        ],
+      content: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Form(
+                key: _formKey,
+                child: Column(
+                  children: [
+                    _buildTextField('Task', taskController),
+                    _buildTextField('Description', descriptionController),
+                    const SizedBox(height: 30),
+                    _buildDueDateButton(),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
       actions: [
         _buildCancelButton(),
@@ -71,8 +82,8 @@ class _EditTaskState extends State<EditTask> {
     );
   }
 
-  Widget _buildTextField(String labelText, TextEditingController controller) {
-    return TextField(
+    Widget _buildTextField(String labelText, TextEditingController controller) {
+    return TextFormField(
       controller: controller,
       style: TextStyle(
         color: Colors.grey[600],
@@ -81,6 +92,12 @@ class _EditTaskState extends State<EditTask> {
       decoration: InputDecoration(
         labelText: labelText,
       ),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter some text';
+        }
+        return null;
+      },
     );
   }
 
@@ -104,9 +121,13 @@ class _EditTaskState extends State<EditTask> {
     );
   }
 
-  Widget _buildEditButton() {
+   Widget _buildEditButton() {
     return ElevatedButton(
-      onPressed: _editTask,
+      onPressed:  () {
+        if (_formKey.currentState!.validate()) { 
+          _editTask();
+        }
+      },
       child: Text(
         'Edit Task',
         style: TextStyle(color: Colors.blueGrey[800], fontSize: 15),
@@ -128,21 +149,18 @@ class _EditTaskState extends State<EditTask> {
   }
 
   void _editTask() {
-    if (taskController.text.isNotEmpty && descriptionController.text.isNotEmpty) {
-      final documentReference = FirebaseFirestore.instance.collection('Todo').doc(docID);
-      documentReference.update({
-        'task': taskController.text,
-        'description': descriptionController.text,
-        'date': initialDate,
-      }).then((_) {
-        logger.i('----------[ Updated Successfully ]----------'); 
-      }).catchError((onError) {
-        logger.i('Error: $onError  id: $docID');
-      });
+    
+    final documentReference = FirebaseFirestore.instance.collection('Todo').doc(docID);
+    documentReference.update({
+      'task': taskController.text,
+      'description': descriptionController.text,
+      'date': initialDate,
+    }).then((_) {
+      logger.i('----------[ Updated Successfully ]----------'); 
+    }).catchError((onError) {
+      logger.i('Error: $onError  id: $docID');
+    });
 
-      Navigator.pop(context);
-    } else {
-      // Handle case when fields are empty
-    }
+    Navigator.pop(context); 
   }
 }

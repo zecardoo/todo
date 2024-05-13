@@ -33,6 +33,8 @@ class _HomeState extends State<Home> {
     ];
 
     return Scaffold(
+      
+      resizeToAvoidBottomInset: true,
       backgroundColor: Colors.grey[300],
       appBar: AppBar(
         title: const Text('All Lists', style: TextStyle(color: Colors.white),),
@@ -45,8 +47,8 @@ class _HomeState extends State<Home> {
         ],
         backgroundColor: Colors.blueGrey[600],
       ),
-      body: taskPages[currentPageIndex], // Show the current page
-
+      body: SafeArea(child: taskPages[currentPageIndex]), // Show the current page
+    
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: currentPageIndex,
         onTap: (int index) {
@@ -80,6 +82,7 @@ class _HomeState extends State<Home> {
               return const AddNewTask();
             },
           );
+          // 
           setState(() {
             currentPageIndex = 0;
           });
@@ -102,9 +105,8 @@ class _HomeState extends State<Home> {
 
   // Method to build a task page based on completion status================================================================================
   Widget _buildTaskPage(bool isCompleted) {
-    AnimationStyle? animationStyle;
-
     return Padding(
+      
       padding: const EdgeInsets.all(8.0),
       child: StreamBuilder(
         stream: FirebaseFirestore.instance
@@ -138,7 +140,7 @@ class _HomeState extends State<Home> {
               final docsID = task.id;
               // get the data of that id doc to update or delete 
               final documentReference = FirebaseFirestore.instance.collection('Todo').doc(docsID);
-
+          
               return  Dismissible(
               key: Key(docsID), // Provide a unique key
               onDismissed: (direction) {
@@ -160,7 +162,7 @@ class _HomeState extends State<Home> {
                   alignment: Alignment.centerRight,
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: const Icon(Icons.delete, color: Colors.white),
-
+          
                 ),
               ),
             
@@ -168,7 +170,7 @@ class _HomeState extends State<Home> {
                 child: ListTile(
                   leading: Checkbox(
                     value: task['iscompleted'],
-
+          
                     onChanged: (bool? value) {
                       setState(() {
                         documentReference.update({'iscompleted': value!})
@@ -180,7 +182,7 @@ class _HomeState extends State<Home> {
                       });
                     },
                   ),
-
+          
                   title: Text(
                     task['task'],
                     style: TextStyle(
@@ -190,7 +192,7 @@ class _HomeState extends State<Home> {
                       color: task['iscompleted'] ? Colors.grey[400] : Colors.blueGrey[500],
                     ),
                   ),
-
+          
                   subtitle: Text(
                     task['description'],
                     style: TextStyle(
@@ -199,12 +201,11 @@ class _HomeState extends State<Home> {
                       color: task['iscompleted'] ? Colors.grey[400] : null,
                     ),
                   ),
-
+          
                   dense: false,
                   trailing: PopupMenuButton<TaskAction>(
                     //to hide text when i hover button
                     tooltip: '',
-                    popUpAnimationStyle: animationStyle,
                     icon: const Icon(Icons.more_vert),
                     onSelected: (TaskAction item) {
                       switch (item) {
@@ -218,13 +219,13 @@ class _HomeState extends State<Home> {
                             }, 
                           );
                           break;
-
+          
                         case TaskAction.delete:
                           documentReference.delete()
                           .then((_) {
                             logger.i('----------[ Deleted Successfull ]----------');
                           }).catchError((onError) {
-
+          
                             logger.e('Error ----> $onError');
                           });
                         break;

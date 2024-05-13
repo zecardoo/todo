@@ -1,30 +1,35 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:todo/components/button.dart';
 import 'package:todo/components/text_fild.dart';
 import 'package:todo/components/square_tile.dart';
+import 'package:todo/services/google_auth.dart';
 
 class RegisterPage extends StatefulWidget {
   final Function()? onTap;
 
   // Constructor with an onTap function parameter
-  const RegisterPage({Key? key, required this.onTap});
+  const RegisterPage({super.key, required this.onTap});
 
   @override
   State<RegisterPage> createState() => _RegisterPageState();
 }
 
 class _RegisterPageState extends State<RegisterPage> {
+  
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   final conformPasswordController = TextEditingController();
 
   // Method to sign up user
-  void signUserUp() async {
+  void signUserUp() async{
     showLoadingDialog();
     try {
       if (passwordController.text == conformPasswordController.text) {
-        await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        await  FirebaseAuth.instance.createUserWithEmailAndPassword(
           email: emailController.text,
           password: passwordController.text,
         );
@@ -32,6 +37,7 @@ class _RegisterPageState extends State<RegisterPage> {
         Navigator.pop(context);
         showErrorMessage('Passwords don\'t match. Please try again!');
       }
+      Navigator.pop(context);
     } on FirebaseAuthException catch (e) {
       Navigator.pop(context);
       showErrorMessage(e.code);
@@ -59,7 +65,18 @@ class _RegisterPageState extends State<RegisterPage> {
   void showLoadingDialog() {
     showDialog(
       context: context,
-      builder: (context) => const Center(child: CircularProgressIndicator()),
+      builder: (context) {
+        return Container(
+          decoration: BoxDecoration(
+            color: Colors.blueGrey[600]
+          ),
+          child: const Center(child: SpinKitCubeGrid(
+            color: Colors.white,
+            size: 80.0,
+            )
+          ),
+        );
+      },
     );
   }
 
@@ -105,10 +122,10 @@ class _RegisterPageState extends State<RegisterPage> {
                 
                 const SizedBox(height: 10), // Spacing
                 
-                Row(
+                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    SquareTile(onTap: () {}, imagePath: 'assets/google.png'), // Google sign in
+                    SquareTile(onTap: () => GoogleAuth().signInWithGoogle(context), imagePath: 'assets/google.png'), // Google sign in
                     const SizedBox(width: 25), // Spacing
                     SquareTile(onTap: () {}, imagePath: 'assets/facebook.png'), // Facebook sign in
                   ],
